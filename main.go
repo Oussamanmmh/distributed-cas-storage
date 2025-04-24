@@ -16,4 +16,6 @@ func main() {
 	if err := tr.ListenAndAccept(); err != nil {
 		log.Fatalf("Error starting TCP transport: %v", err)
 	}
+
+	select {}
 }
