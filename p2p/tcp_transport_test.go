@@ -13,4 +13,5 @@ func TestTCPTranspo(t *testing.T) {
 
 	assert.Equal(t, listenAddress, tr.listenAddress)
 	assert.Nil(t, tr.ListenAndAccept())
+	select {}
 }
