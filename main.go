@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/oussamanmmh/distributed-cas-storage/p2p"
@@ -16,6 +17,11 @@ func main() {
 	if err := tr.ListenAndAccept(); err != nil {
 		log.Fatalf("Error starting TCP transport: %v", err)
 	}
-
+	go func() {
+		for {
+			msg := <-tr.Consume()
+			fmt.Printf("Received message: %s\n", msg.Payload)
+		}
+	}()
 	select {}
 }

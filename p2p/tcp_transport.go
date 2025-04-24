@@ -30,6 +30,7 @@ type TCPTransportOpts struct {
 type TCPTransport struct {
 	TCPTransportOpts
 	listener net.Listener
+	rpcch    chan RPC
 	mu       sync.RWMutex
 	decoder  Decoder
 	peers    map[net.Addr]Peer
@@ -38,9 +39,16 @@ type TCPTransport struct {
 func NewTCPTransport(opts TCPTransportOpts) *TCPTransport {
 	return &TCPTransport{
 		TCPTransportOpts: opts,
+		rpcch:            make(chan RPC),
 	}
 }
 
+func (t *TCPTransport) Consume() <-chan RPC {
+	return t.rpcch
+}
+func (p *TCPPeer) Close() error {
+	return p.conn.Close()
+}
 func (t *TCPTransport) ListenAndAccept() error {
 	ln, err := net.Listen("tcp", t.ListenAddr)
 	if err != nil {
@@ -70,13 +78,13 @@ func (t *TCPTransport) handleConn(conn net.Conn) {
 	}
 
 	//buf := new(bytes.Buffer)
-	msg := &Message{}
+	rpc := RPC{}
 	for {
-		if err := t.Decoder.Decode(conn, msg); err != nil {
+		if err := t.Decoder.Decode(conn, &rpc); err != nil {
 			log.Fatal("Error decoding message:", err)
 			continue
 		}
-		msg.From = conn.RemoteAddr()
-		fmt.Print("Received message:", *msg)
+		rpc.From = conn.RemoteAddr()
+		t.rpcch <- rpc
 	}
 }
