@@ -76,6 +76,7 @@ func (t *TCPTransport) handleConn(conn net.Conn) {
 			log.Fatal("Error decoding message:", err)
 			continue
 		}
-		fmt.Print("Received message:", msg.Payload)
+		msg.From = conn.RemoteAddr()
+		fmt.Print("Received message:", *msg)
 	}
 }
